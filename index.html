@@ -87,7 +87,6 @@
     const form = document.getElementById("paymentForm");
     const useGpayLink = document.getElementById("useGpayLink");
 
-    // Detect iPhone
     const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isIphone) {
       useGpayLink.checked = true;
@@ -122,7 +121,7 @@
 
       let paymentUrl = "";
       if (useGpayLink.checked) {
-        paymentUrl = `https://pay.google.com/gp/p/ui/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+        paymentUrl = `https://redirect-stackguardian.vercel.app/api/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
       } else {
         paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
       }
