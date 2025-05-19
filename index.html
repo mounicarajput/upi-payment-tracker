@@ -73,7 +73,8 @@
         cu: "INR"
       }).toString();
 
-      const upiUrl = `upi://pay?${params}`;
+      //const upiUrl = `upi://pay?${params}`;
+      const upiUrl = `intent://upi/pay?${params}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
 
       // Store transaction locally before redirect
       localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
