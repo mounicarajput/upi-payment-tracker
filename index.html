@@ -2,222 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UPI Payment Tracker with QR & Recommendations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UPI Payment Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
     body {
       font-family: 'Inter', sans-serif;
-      background: #f4f7fb;
-      margin: 0; padding: 2rem;
-      color: #333;
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 2rem;
+      color: #1f2937;
+      display: flex;
+      flex-direction: row;
+      gap: 2rem;
+    }
+    .left, .right {
+      flex: 1;
     }
     h2, h3 {
-      color: #1e40af;
-      margin-bottom: 0.5rem;
+      color: #111827;
     }
-    form {
+    form, .history, #categoryDiv, #recommendation, #qrReader {
       background: white;
-      padding: 1.5rem 2rem;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgb(59 130 246 / 0.15);
+      border-radius: 1rem;
+      padding: 2rem;
       margin-bottom: 2rem;
+      box-shadow: 0 10px 15px rgba(0,0,0,0.05);
     }
     label {
-      display: block;
-      margin: 0.75rem 0 0.25rem 0;
       font-weight: 600;
-      font-size: 0.9rem;
-    }
-    input[type=text],
-    input[type=number] {
-      width: 100%;
-      padding: 0.6rem 0.8rem;
-      border-radius: 8px;
-      border: 1.8px solid #cbd5e1;
-      font-size: 1rem;
-      box-sizing: border-box;
-      transition: border-color 0.2s ease;
-    }
-    input[type=text]:focus,
-    input[type=number]:focus {
-      border-color: #3b82f6;
-      outline: none;
-    }
-    button, #payLink {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.7rem 1.3rem;
-      font-weight: 700;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
       margin-top: 1rem;
-      user-select: none;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
+      display: block;
+    }
+    input[type="text"], input[type="number"] {
       width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
     }
-    button:hover, #payLink:hover {
-      background-color: #2563eb;
-    }
-    button:disabled, #payLink[disabled] {
-      background-color: #94a3b8;
-      cursor: not-allowed;
-    }
-    .category-buttons {
-      margin-top: 1rem;
+    input[type="checkbox"] {
+      margin-right: 0.5rem;
     }
     .category-buttons button {
-      margin-right: 0.7rem;
-      margin-bottom: 0.7rem;
-      width: 48%;
-    }
-    #categoryDiv {
-      background: white;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgb(59 130 246 / 0.1);
-      margin-bottom: 2rem;
-    }
-    .history {
-      background: white;
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgb(59 130 246 / 0.1);
-      margin-bottom: 2rem;
-      max-height: 250px;
-      overflow-y: auto;
-    }
-    #historyList li {
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 0.3rem;
-    }
-    #monthFilter {
+      background: #e0f2fe;
+      border: none;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
       margin-top: 0.5rem;
-      margin-bottom: 1rem;
-      width: 100%;
-      padding: 0.5rem;
-      border-radius: 8px;
-      border: 1.5px solid #cbd5e1;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .category-buttons button:hover {
+      background: #bae6fd;
+    }
+    #payLink {
+      display: inline-block;
+      margin-top: 1.5rem;
+      padding: 0.75rem 2rem;
+      background-color: #10b981;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.5rem;
       font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #payLink:hover {
+      background-color: #059669;
+    }
+    #payLink[disabled] {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    select {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e5e7eb;
     }
     .toggle {
       margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .toggle input {
-      margin-right: 0.5rem;
-      transform: scale(1.3);
-      cursor: pointer;
-    }
-    #qrScanner {
-      margin-top: 1rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 14px rgb(59 130 246 / 0.1);
-      overflow: hidden;
-    }
-    #recommendation {
-      margin-top: 1rem;
-      background: #e0f2fe;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      font-weight: 600;
-      color: #0369a1;
-      box-shadow: 0 2px 6px rgb(3 105 161 / 0.15);
     }
   </style>
 </head>
 <body>
-  <h2>UPI Payment + Category Tracker</h2>
+  <div class="left">
+    <h2>UPI Payment + Category Tracker</h2>
+    <form id="paymentForm">
+      <label for="upiId">Receiver UPI ID:</label>
+      <input type="text" id="upiId" placeholder="e.g. example@upi" required />
 
-  <form id="expenseForm">
-    <label for="upiId">Receiver UPI ID:</label>
-    <input type="text" id="upiId" placeholder="e.g. example@upi" required />
+      <label for="name">Payee Name:</label>
+      <input type="text" id="name" placeholder="e.g. Monika" required />
 
-    <label for="name">Payee Name:</label>
-    <input type="text" id="name" placeholder="e.g. Monika" required />
+      <label for="amount">Amount (INR):</label>
+      <input type="number" id="amount" placeholder="e.g. 100" required />
 
-    <label for="amount">Amount (INR):</label>
-    <input type="number" id="amount" placeholder="e.g. 100" required min="1" step="0.01"/>
+      <label for="note">Note:</label>
+      <input type="text" id="note" placeholder="e.g. Food order" required />
 
-    <label for="note">Note:</label>
-    <input type="text" id="note" placeholder="e.g. Food order" required />
+      <label class="toggle">
+        <input type="checkbox" id="useGpayLink" /> Use Google Pay Web URL (for iPhone)
+      </label>
 
-    <label class="toggle">
-      <input type="checkbox" id="useGpayLink" />
-      Use Google Pay Web URL (for iPhone)
-    </label>
+      <a id="payLink" href="#" disabled>Pay with UPI App</a>
+    </form>
 
-    <a id="payLink" href="#" disabled>Pay with UPI App</a>
-    <button type="button" id="startScanBtn">Scan UPI QR Code</button>
-  </form>
+    <div id="categoryDiv" style="display:none;">
+      <h3>Select Category:</h3>
+      <div class="category-buttons">
+        <button onclick="selectCategory('Food')">Food</button>
+        <button onclick="selectCategory('Entertainment')">Entertainment</button>
+        <button onclick="selectCategory('Petrol')">Petrol</button>
+        <button onclick="selectCategory('Education')">Education</button>
+      </div>
+    </div>
 
-  <div id="qrScanner" style="display:none;"></div>
-
-  <div id="categoryDiv" style="display:none;">
-    <h3>Select Category:</h3>
-    <div class="category-buttons">
-      <button type="button" onclick="selectCategory('Food')">Food</button>
-      <button type="button" onclick="selectCategory('Entertainment')">Entertainment</button>
-      <button type="button" onclick="selectCategory('Petrol')">Petrol</button>
-      <button type="button" onclick="selectCategory('Education')">Education</button>
-      <button type="button" onclick="selectCategory('Fun')">Fun</button>
-      <button type="button" onclick="selectCategory('Vacation')">Vacation</button>
-      <button type="button" onclick="selectCategory('Savings')">Savings</button>
-      <button type="button" onclick="selectCategory('Stocks')">Stocks</button>
-      <button type="button" onclick="selectCategory('Tax')">Tax</button>
+    <div class="history">
+      <h3>Transaction History</h3>
+      <label for="monthFilter">Filter by Month:</label>
+      <select id="monthFilter" onchange="loadHistory()">
+        <option value="">All</option>
+      </select>
+      <ul id="historyList"></ul>
     </div>
   </div>
 
-  <div id="recommendation"></div>
+  <div class="right">
+    <div id="qrReader">
+      <h3>Scan UPI QR</h3>
+      <div id="reader" style="width:100%;"></div>
+    </div>
 
-  <div class="history">
-    <h3>Transaction History</h3>
-    <label for="monthFilter">Filter by Month:</label>
-    <select id="monthFilter" onchange="loadHistory()">
-      <option value="">All</option>
-    </select>
-    <ul id="historyList"></ul>
+    <div id="recommendation">
+      <h3>Income & Recommendation</h3>
+      <label for="salary">Salary (Monthly):</label>
+      <input type="number" id="salary" placeholder="e.g. 50000" />
+      <label for="extra">Other Income:</label>
+      <input type="number" id="extra" placeholder="e.g. 5000" />
+      <button onclick="generateRecommendation()">Generate Recommendation</button>
+      <ul id="recommendList"></ul>
+    </div>
   </div>
-
-  <!-- Html5Qrcode lib -->
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
   <script>
     const payLink = document.getElementById("payLink");
-    const form = document.getElementById("expenseForm");
+    const form = document.getElementById("paymentForm");
     const useGpayLink = document.getElementById("useGpayLink");
-    const startScanBtn = document.getElementById("startScanBtn");
-    const qrScannerDiv = document.getElementById("qrScanner");
-    const recommendationDiv = document.getElementById("recommendation");
-    const categoryDiv = document.getElementById("categoryDiv");
 
-    // Detect iPhone/iOS and auto-check GPay Web URL toggle and disable it
     const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isIphone) {
       useGpayLink.checked = true;
       useGpayLink.disabled = true;
     }
 
-    // Enable pay button only if all inputs filled
     form.addEventListener("input", () => {
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
       const amount = document.getElementById('amount').value.trim();
       const note = document.getElementById('note').value.trim();
-
       if (upiId && name && amount && note) {
         payLink.removeAttribute("disabled");
       } else {
@@ -225,270 +183,123 @@
       }
     });
 
-    // Build UPI pay link on input or toggle change
-    function buildUPILink() {
-      const upiId = encodeURIComponent(document.getElementById('upiId').value.trim());
-      const name = encodeURIComponent(document.getElementById('name').value.trim());
-      const amount = encodeURIComponent(document.getElementById('amount').value.trim());
-      const note = encodeURIComponent(document.getElementById('note').value.trim());
-
-      if (!upiId || !name || !amount) {
-        payLink.href = "#";
-        payLink.setAttribute("disabled", true);
+    payLink.addEventListener("click", function(e) {
+      e.preventDefault();
+      const upiId = document.getElementById('upiId').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const amount = document.getElementById('amount').value.trim();
+      const note = document.getElementById('note').value.trim();
+      if (!upiId || !name || !amount || !note) {
+        alert("Please fill all fields.");
         return;
       }
-
+      let paymentUrl = "";
       if (useGpayLink.checked) {
-        // Google Pay Web URL scheme for iOS
-        payLink.href = `https://pay.google.com/upi/pay?pa=${upiId}&pn=${name}&am=${amount}&tn=${note}&cu=INR`;
+        paymentUrl = `https://redirect-stackguardian.vercel.app/api/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
       } else {
-        // Default UPI URL scheme for Android or other apps
-        payLink.href = `upi://pay?pa=${upiId}&pn=${name}&am=${amount}&tn=${note}&cu=INR`;
+        paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
       }
-      payLink.removeAttribute("disabled");
-    }
-    form.addEventListener("input", buildUPILink);
-    useGpayLink.addEventListener("change", buildUPILink);
-    buildUPILink();
-
-    // Store scanned or entered transaction temporarily
-    let currentTransaction = null;
-
-    // QR Code Scanner instance
-    let html5QrCode = null;
-
-    // Start QR scanning
-    startScanBtn.addEventListener("click", () => {
-      startScanBtn.disabled = true;
-      qrScannerDiv.style.display = "block";
-      recommendationDiv.textContent = "";
-      startQRScanner();
+      window.location.href = paymentUrl;
+      localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
+      setTimeout(() => {
+        document.getElementById("categoryDiv").style.display = "block";
+      }, 1000);
     });
 
-    function startQRScanner() {
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("qrScanner");
-      }
-      Html5Qrcode.getCameras().then(cameras => {
-        if (cameras && cameras.length) {
-          // Prefer back camera if available
-          let cameraId = cameras[0].id;
-          for (const cam of cameras) {
-            const label = cam.label.toLowerCase();
-            if (label.includes("back") || label.includes("rear")) {
-              cameraId = cam.id;
-              break;
-            }
-          }
-          html5QrCode.start(
-            cameraId,
-            { fps: 10, qrbox: 250 },
-            qrCodeMessage => {
-              // Successfully scanned QR code
-              processUPIQRCode(qrCodeMessage);
-              stopScanning();
-            },
-            errorMessage => {
-              // Ignore scan failures
-            }
-          ).catch(err => {
-            alert("Camera start error: " + err);
-            stopScanning();
-          });
-        } else {
-          alert("No cameras found on this device.");
-          stopScanning();
-        }
-      }).catch(err => {
-        alert("Camera permission error: " + err);
-        stopScanning();
-      });
-    }
-
-    function stopScanning() {
-      if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-          qrScannerDiv.style.display = "none";
-          startScanBtn.disabled = false;
-        }).catch(err => {
-          qrScannerDiv.style.display = "none";
-          startScanBtn.disabled = false;
-        });
-      } else {
-        qrScannerDiv.style.display = "none";
-        startScanBtn.disabled = false;
-      }
-    }
-
-    // Process the scanned UPI QR code text (upi://pay?pa=xxx&pn=yyy...)
-    function processUPIQRCode(qrText) {
-      // Parse query parameters from the URL
-      const url = new URL(qrText.replace("upi://pay?", "https://dummy/?"));
-      const pa = url.searchParams.get("pa") || "";
-      const pn = url.searchParams.get("pn") || "";
-      const tn = url.searchParams.get("tn") || "";
-
-      // Autofill form fields
-      document.getElementById("upiId").value = pa;
-      document.getElementById("name").value = pn;
-      document.getElementById("note").value = tn;
-      document.getElementById("amount").value = "";
-
-      buildUPILink();
-
-      // Show category selection after scanning
-      categoryDiv.style.display = "block";
-      recommendationDiv.textContent = "";
-
-      // Save current transaction partially, wait for user to enter amount & select category
-      currentTransaction = {
-        upiId: pa,
-        name: pn,
-        note: tn,
-        amount: 0,
-        category: null,
-        date: new Date().toISOString(),
-      };
-    }
-
-    // When user selects category, save transaction if amount valid
-    function selectCategory(cat) {
-      if (!currentTransaction) {
-        alert("Please scan a UPI QR code first or fill the form.");
+    function selectCategory(category) {
+      const txn = JSON.parse(localStorage.getItem("lastTxn"));
+      if (!txn) {
+        alert("No payment data found.");
         return;
       }
-      const amtInput = document.getElementById("amount");
-      const amountVal = parseFloat(amtInput.value);
-      if (!amountVal || amountVal <= 0) {
-        alert("Please enter a valid amount before selecting category.");
-        return;
-      }
-
-      currentTransaction.amount = amountVal;
-      currentTransaction.category = cat;
-      currentTransaction.date = new Date().toISOString();
-
-      saveTransaction(currentTransaction);
-      categoryDiv.style.display = "none";
-      currentTransaction = null;
-
-      // Reset form
-      form.reset();
-      buildUPILink();
-
-      // Reload history and show recommendation
-      loadHistory();
-      showRecommendation(amountVal, cat);
-    }
-
-    // Save to localStorage
-    function saveTransaction(txn) {
-      const history = JSON.parse(localStorage.getItem("upiPaymentHistory") || "[]");
+      txn.category = category;
+      txn.timestamp = new Date().toLocaleString();
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
       history.push(txn);
-      localStorage.setItem("upiPaymentHistory", JSON.stringify(history));
+      localStorage.setItem("history", JSON.stringify(history));
+      alert(`Transaction of ₹${txn.amount} categorized as ${category}`);
+      document.getElementById("categoryDiv").style.display = "none";
+      loadHistory();
     }
 
-    // Show recommendation based on amount & category
-    function showRecommendation(amount, category) {
-      let msg = "";
-      if (amount < 100) {
-        msg = "Small spend — consider saving more!";
-      } else if (amount < 500) {
-        msg = "Moderate spend — keep track of your expenses.";
-      } else if (amount < 2000) {
-        msg = "High spend — make sure it's necessary.";
-      } else {
-        msg = "Very high spend — review your budget carefully!";
-      }
-
-      if (category) {
-        const c = category.toLowerCase();
-        if (c === "food") {
-          msg += " Try cooking at home to save money.";
-        } else if (c === "entertainment") {
-          msg += " Consider free or low-cost activities.";
-        } else if (c === "petrol") {
-          msg += " Combine trips to save fuel.";
-        } else if (c === "education") {
-          msg += " Great investment in your future!";
-        } else if (c === "fun") {
-          msg += " Balance fun with savings.";
-        } else if (c === "vacation") {
-          msg += " Plan your vacations in advance to save.";
-        } else if (c === "savings") {
-          msg += " Keep growing your savings!";
-        } else if (c === "stocks") {
-          msg += " Monitor your investments regularly.";
-        } else if (c === "tax") {
-          msg += " Keep track of tax deductions.";
-        }
-      }
-
-      recommendationDiv.textContent = msg;
-    }
-
-    // Load transaction history and show filtered by month
-    function loadHistory() {
-      const historyList = document.getElementById("historyList");
-      const monthFilter = document.getElementById("monthFilter");
-      const filterVal = monthFilter.value; // e.g. "2025-05"
-
-      const history = JSON.parse(localStorage.getItem("upiPaymentHistory") || "[]");
-
-      // Populate month filter dropdown dynamically with months present in data
-      populateMonthFilter(history);
-
-      let filtered = history;
-      if (filterVal) {
-        filtered = history.filter(txn => txn.date.startsWith(filterVal));
-      }
-
-      if (filtered.length === 0) {
-        historyList.innerHTML = "<li>No transactions found.</li>";
-        return;
-      }
-
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      historyList.innerHTML = filtered.map(txn => {
-        const d = new Date(txn.date);
-        const dateStr = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-        return `<li>
-          <strong>${txn.category || "Uncategorized"}</strong> — ₹${txn.amount.toFixed(2)} — ${txn.note} <br/>
-          <small>Paid to <em>${txn.name}</em> (${txn.upiId}) on ${dateStr}</small>
-        </li>`;
-      }).join("");
-    }
-
-    // Dynamically create month options based on data
-    function populateMonthFilter(history) {
-      const monthFilter = document.getElementById("monthFilter");
+    function getMonthOptions(history) {
       const months = new Set();
-
       history.forEach(txn => {
-        if (txn.date && txn.date.length >= 7) {
-          months.add(txn.date.slice(0, 7)); // YYYY-MM
-        }
+        const month = new Date(txn.timestamp).toLocaleString('default', { month: 'long', year: 'numeric' });
+        months.add(month);
       });
+      return Array.from(months);
+    }
 
-      // Clear all except first option ("All")
-      for (let i = monthFilter.options.length - 1; i > 0; i--) {
-        monthFilter.remove(i);
-      }
-
-      // Add months sorted descending
-      Array.from(months).sort((a, b) => b.localeCompare(a)).forEach(m => {
-        const option = document.createElement("option");
-        option.value = m;
-        const [year, month] = m.split("-");
-        option.text = new Date(year, month - 1).toLocaleString(undefined, { year: "numeric", month: "long" });
-        monthFilter.appendChild(option);
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
+      const selectedMonth = document.getElementById("monthFilter").value;
+      const list = document.getElementById("historyList");
+      list.innerHTML = "";
+      const filtered = selectedMonth ? history.filter(txn => {
+        const txnMonth = new Date(txn.timestamp).toLocaleString('default', { month: 'long', year: 'numeric' });
+        return txnMonth === selectedMonth;
+      }) : history;
+      filtered.forEach(txn => {
+        const li = document.createElement("li");
+        li.textContent = `${txn.timestamp}: ₹${txn.amount} to ${txn.name} for ${txn.note} [${txn.category}]`;
+        list.appendChild(li);
+      });
+      const monthFilter = document.getElementById("monthFilter");
+      const existingOptions = Array.from(monthFilter.options).map(opt => opt.value);
+      const availableMonths = getMonthOptions(history);
+      availableMonths.forEach(month => {
+        if (!existingOptions.includes(month)) {
+          const option = document.createElement("option");
+          option.value = month;
+          option.textContent = month;
+          monthFilter.appendChild(option);
+        }
       });
     }
 
-    // Initial load
-    loadHistory();
+    function generateRecommendation() {
+      const salary = parseFloat(document.getElementById("salary").value || 0);
+      const extra = parseFloat(document.getElementById("extra").value || 0);
+      const total = salary + extra;
+      const recList = document.getElementById("recommendList");
+      recList.innerHTML = "";
+      const data = {
+        Food: total * 0.2,
+        Entertainment: total * 0.1,
+        Fun: total * 0.05,
+        Vacation: total * 0.1,
+        Savings: total * 0.25,
+        Stocks: total * 0.15,
+        Tax: total * 0.15
+      };
+      Object.entries(data).forEach(([key, val]) => {
+        const li = document.createElement("li");
+        li.textContent = `${key}: ₹${val.toFixed(2)}`;
+        recList.appendChild(li);
+      });
+    }
 
+    function startScanner() {
+      const qr = new Html5Qrcode("reader");
+      qr.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 200 },
+        qrCodeMessage => {
+          if (qrCodeMessage.includes("upi://pay")) {
+            const params = new URLSearchParams(qrCodeMessage.split('?')[1]);
+            document.getElementById("upiId").value = params.get("pa") || "";
+            document.getElementById("name").value = params.get("pn") || "";
+            document.getElementById("amount").value = params.get("am") || "";
+            document.getElementById("note").value = params.get("tn") || "";
+          }
+        },
+        error => {}
+      );
+    }
+
+    startScanner();
+    loadHistory();
   </script>
 </body>
 </html>
