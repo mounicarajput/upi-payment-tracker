@@ -87,6 +87,13 @@
     const form = document.getElementById("paymentForm");
     const useGpayLink = document.getElementById("useGpayLink");
 
+    // Detect iPhone
+    const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIphone) {
+      useGpayLink.checked = true;
+      useGpayLink.disabled = true;
+    }
+
     form.addEventListener("input", () => {
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
@@ -116,11 +123,11 @@
       let paymentUrl = "";
       if (useGpayLink.checked) {
         paymentUrl = `https://pay.google.com/gp/p/ui/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
-        window.location.href = paymentUrl; // Use location.href instead of opening a new tab
       } else {
         paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
-        window.location.href = paymentUrl; // Try direct open in same tab for iOS
       }
+
+      window.location.href = paymentUrl;
 
       localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
 
