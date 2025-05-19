@@ -30,9 +30,10 @@
       font-weight: bold;
       cursor: pointer;
     }
-    #payLink:disabled {
+    #payLink[disabled] {
       background-color: gray;
       cursor: not-allowed;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -52,17 +53,16 @@
     <label for="note">Note:</label>
     <input type="text" id="note" placeholder="e.g. Food order" required />
 
-    <!-- Remove submit button, add a disabled anchor link -->
-    <a href="#" id="payLink" target="_blank" aria-disabled="true">Pay with Google Pay</a>
+    <a id="payLink" href="#" disabled>Pay with UPI App</a>
   </form>
 
   <div id="categoryDiv" style="display:none;">
     <h3>Select Category:</h3>
     <div class="category-buttons">
-      <button type="button" onclick="selectCategory('Food')">Food</button>
-      <button type="button" onclick="selectCategory('Entertainment')">Entertainment</button>
-      <button type="button" onclick="selectCategory('Petrol')">Petrol</button>
-      <button type="button" onclick="selectCategory('Education')">Education</button>
+      <button onclick="selectCategory('Food')">Food</button>
+      <button onclick="selectCategory('Entertainment')">Entertainment</button>
+      <button onclick="selectCategory('Petrol')">Petrol</button>
+      <button onclick="selectCategory('Education')">Education</button>
     </div>
   </div>
 
@@ -75,66 +75,43 @@
     const payLink = document.getElementById("payLink");
     const form = document.getElementById("paymentForm");
 
-    function enablePayLink() {
-      payLink.removeAttribute("aria-disabled");
-      payLink.style.backgroundColor = "#3b82f6";
-      payLink.style.cursor = "pointer";
-    }
-
-    function disablePayLink() {
-      payLink.setAttribute("aria-disabled", "true");
-      payLink.style.backgroundColor = "gray";
-      payLink.style.cursor = "not-allowed";
-    }
-
-    // Disable pay link by default
-    disablePayLink();
-
     form.addEventListener("input", () => {
-      // Enable the pay link only if all fields have values
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
       const amount = document.getElementById('amount').value.trim();
       const note = document.getElementById('note').value.trim();
 
-      if(upiId && name && amount && note) {
-        enablePayLink();
+      if (upiId && name && amount && note) {
+        payLink.removeAttribute("disabled");
       } else {
-        disablePayLink();
+        payLink.setAttribute("disabled", true);
       }
     });
 
-    payLink.addEventListener("click", (e) => {
+    payLink.addEventListener("click", function(e) {
+      e.preventDefault();
+
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
       const amount = document.getElementById('amount').value.trim();
       const note = document.getElementById('note').value.trim();
 
-      if(!upiId || !name || !amount || !note) {
-        e.preventDefault();
-        alert("Please fill all fields before proceeding.");
+      if (!upiId || !name || !amount || !note) {
+        alert("Please fill all fields.");
         return;
       }
 
-      e.preventDefault();
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
 
-      // Build UPI params
-      const upiParams = `pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
-
-      // Build UPI URL
-      const upiUrl = `upi://pay?${upiParams}`;
-
-      // Store transaction locally before opening app
       localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
 
-      // Set the href dynamically and open in new tab/window
-      payLink.href = upiUrl;
+      // Open UPI link in a new tab
       window.open(upiUrl, "_blank");
 
-      // Show category selection after a short delay to ensure app open prompt
+      // Show category selector
       setTimeout(() => {
         document.getElementById("categoryDiv").style.display = "block";
-      }, 1500);
+      }, 1000);
     });
 
     function selectCategory(category) {
