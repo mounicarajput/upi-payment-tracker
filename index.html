@@ -69,12 +69,16 @@
       <button onclick="selectCategory('Food')">Food</button>
       <button onclick="selectCategory('Entertainment')">Entertainment</button>
       <button onclick="selectCategory('Petrol')">Petrol</button>
-      <button onclick="selectCategory('Education')">Educatio</button>
+      <button onclick="selectCategory('Education')">Education</button>
     </div>
   </div>
 
   <div class="history">
     <h3>Transaction History</h3>
+    <label for="monthFilter">Filter by Month:</label>
+    <select id="monthFilter" onchange="loadHistory()">
+      <option value="">All</option>
+    </select>
     <ul id="historyList"></ul>
   </div>
 
@@ -112,14 +116,13 @@
       let paymentUrl = "";
       if (useGpayLink.checked) {
         paymentUrl = `https://pay.google.com/gp/p/ui/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+        window.location.href = paymentUrl; // Use location.href instead of opening a new tab
       } else {
         paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
+        window.location.href = paymentUrl; // Try direct open in same tab for iOS
       }
 
       localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
-
-      // Open payment link in a new tab
-      window.open(paymentUrl, "_blank");
 
       setTimeout(() => {
         document.getElementById("categoryDiv").style.display = "block";
@@ -144,14 +147,45 @@
       loadHistory();
     }
 
+    function getMonthOptions(history) {
+      const months = new Set();
+      history.forEach(txn => {
+        const month = new Date(txn.timestamp).toLocaleString('default', { month: 'long', year: 'numeric' });
+        months.add(month);
+      });
+      return Array.from(months);
+    }
+
     function loadHistory() {
       const history = JSON.parse(localStorage.getItem("history") || "[]");
+      const selectedMonth = document.getElementById("monthFilter").value;
       const list = document.getElementById("historyList");
       list.innerHTML = "";
-      history.forEach(txn => {
+
+      const filtered = selectedMonth
+        ? history.filter(txn => {
+            const txnMonth = new Date(txn.timestamp).toLocaleString('default', { month: 'long', year: 'numeric' });
+            return txnMonth === selectedMonth;
+          })
+        : history;
+
+      filtered.forEach(txn => {
         const li = document.createElement("li");
         li.textContent = `${txn.timestamp}: ₹${txn.amount} to ${txn.name} for ${txn.note} [${txn.category}]`;
         list.appendChild(li);
+      });
+
+      const monthFilter = document.getElementById("monthFilter");
+      const existingOptions = Array.from(monthFilter.options).map(opt => opt.value);
+      const availableMonths = getMonthOptions(history);
+
+      availableMonths.forEach(month => {
+        if (!existingOptions.includes(month)) {
+          const option = document.createElement("option");
+          option.value = month;
+          option.textContent = month;
+          monthFilter.appendChild(option);
+        }
       });
     }
 
