@@ -35,6 +35,9 @@
       cursor: not-allowed;
       pointer-events: none;
     }
+    .toggle {
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -52,6 +55,10 @@
 
     <label for="note">Note:</label>
     <input type="text" id="note" placeholder="e.g. Food order" required />
+
+    <label class="toggle">
+      <input type="checkbox" id="useGpayLink" /> Use Google Pay Web URL (for iPhone)
+    </label>
 
     <a id="payLink" href="#" disabled>Pay with UPI App</a>
   </form>
@@ -74,6 +81,7 @@
   <script>
     const payLink = document.getElementById("payLink");
     const form = document.getElementById("paymentForm");
+    const useGpayLink = document.getElementById("useGpayLink");
 
     form.addEventListener("input", () => {
       const upiId = document.getElementById('upiId').value.trim();
@@ -101,14 +109,18 @@
         return;
       }
 
-      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
+      let paymentUrl = "";
+      if (useGpayLink.checked) {
+        paymentUrl = `https://pay.google.com/gp/p/ui/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+      } else {
+        paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
+      }
 
       localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
 
-      // Open UPI link in a new tab
-      window.open(upiUrl, "_blank");
+      // Open payment link in a new tab
+      window.open(paymentUrl, "_blank");
 
-      // Show category selector
       setTimeout(() => {
         document.getElementById("categoryDiv").style.display = "block";
       }, 1000);
