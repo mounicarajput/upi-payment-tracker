@@ -3,146 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>UPI Payment Tracker + Financial Recommendation</title>
+  <title>UPI Payment Tracker with QR Scanner</title>
   <style>
-    /* Reset & base */
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f5f7fa;
-      margin: 1.5rem auto;
+      color: #333;
+      margin: 2rem auto;
       max-width: 480px;
       padding: 1rem;
-      color: #333;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 10px;
     }
     h2, h3 {
-      color: #1f2937;
-      margin-bottom: 0.75rem;
+      text-align: center;
+      color: #2c3e50;
     }
     label {
-      font-weight: 600;
       margin-top: 1rem;
+      font-weight: 600;
       display: block;
-      color: #4b5563;
     }
-    input[type="text"],
-    input[type="number"],
-    select {
+    input[type=text], input[type=number] {
       width: 100%;
-      padding: 0.6rem 0.75rem;
-      margin-top: 0.25rem;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
       border-radius: 6px;
-      border: 1.5px solid #d1d5db;
+      border: 1px solid #ccc;
       font-size: 1rem;
+      box-sizing: border-box;
       transition: border-color 0.3s ease;
     }
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    select:focus {
+    input[type=text]:focus, input[type=number]:focus {
       outline: none;
       border-color: #3b82f6;
-      box-shadow: 0 0 6px #93c5fd;
     }
     button, a#payLink {
-      margin-top: 1rem;
       background-color: #3b82f6;
       border: none;
       color: white;
-      font-weight: 700;
-      padding: 0.75rem 1.25rem;
-      font-size: 1.1rem;
-      border-radius: 8px;
+      padding: 0.7rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
       cursor: pointer;
-      user-select: none;
-      display: inline-block;
+      margin-top: 1rem;
       text-align: center;
-      text-decoration: none;
+      display: inline-block;
+      user-select: none;
       transition: background-color 0.3s ease;
+      text-decoration: none;
     }
     button:hover, a#payLink:hover {
       background-color: #2563eb;
     }
-    button:disabled, a#payLink[disabled] {
-      background-color: #9ca3af;
+    a#payLink[disabled] {
+      background-color: #a1a1aa;
       cursor: not-allowed;
       pointer-events: none;
     }
     .category-buttons button {
-      margin-right: 0.5rem;
-      margin-top: 0.5rem;
       background-color: #e0e7ff;
       color: #4338ca;
-      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
       border-radius: 6px;
-      padding: 0.45rem 0.9rem;
       border: none;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.3s ease;
     }
     .category-buttons button:hover {
       background-color: #c7d2fe;
     }
-    #categoryDiv {
-      margin-top: 1.5rem;
-      background: white;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-    }
-    .history, .recommendation {
+    .history {
       margin-top: 2rem;
       background: white;
-      padding: 1rem 1.25rem;
-      border-radius: 10px;
-      box-shadow: 0 1px 8px rgba(0,0,0,0.1);
-    }
-    #historyList {
-      list-style: none;
-      padding-left: 0;
-      max-height: 160px;
+      padding: 1rem;
+      border-radius: 8px;
+      max-height: 240px;
       overflow-y: auto;
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-      color: #374151;
-    }
-    #historyList li {
-      border-bottom: 1px solid #e5e7eb;
-      padding: 0.3rem 0;
+      box-shadow: inset 0 0 6px #d1d5db;
     }
     #monthFilter {
-      margin-top: 0.3rem;
-      max-width: 180px;
-    }
-    .toggle {
-      margin-top: 1rem;
-      font-weight: 600;
-      user-select: none;
-      color: #4b5563;
-    }
-    .recommendation table {
+      margin-bottom: 1rem;
       width: 100%;
-      border-collapse: collapse;
+      padding: 0.4rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    #qr-reader {
+      width: 100%;
       margin-top: 1rem;
-      font-size: 0.95rem;
+      border-radius: 8px;
+      overflow: hidden;
     }
-    .recommendation th, .recommendation td {
-      border: 1px solid #e5e7eb;
-      padding: 0.5rem 0.75rem;
-      text-align: left;
-    }
-    .recommendation th {
-      background-color: #e0e7ff;
-      color: #4338ca;
-    }
-    .future-health {
+    #scanSection {
+      text-align: center;
       margin-top: 1rem;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: #2563eb;
     }
   </style>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
   <h2>UPI Payment + Category Tracker</h2>
@@ -155,13 +117,13 @@
     <input type="text" id="name" placeholder="e.g. Monika" required />
 
     <label for="amount">Amount (INR):</label>
-    <input type="number" id="amount" placeholder="e.g. 100" required min="1" />
+    <input type="number" id="amount" placeholder="e.g. 100" min="1" step="0.01" required />
 
     <label for="note">Note:</label>
     <input type="text" id="note" placeholder="e.g. Food order" required />
 
-    <label class="toggle">
-      <input type="checkbox" id="useGpayLink" /> Use Google Pay Web URL (for iPhone)
+    <label class="toggle" style="margin-top: 1rem; display:flex; align-items:center;">
+      <input type="checkbox" id="useGpayLink" style="margin-right: 0.5rem;" /> Use Google Pay Web URL (for iPhone)
     </label>
 
     <a id="payLink" href="#" disabled>Pay with UPI App</a>
@@ -177,6 +139,11 @@
     </div>
   </div>
 
+  <div id="scanSection">
+    <button id="startScanBtn">Scan UPI QR Code</button>
+    <div id="qr-reader" style="display:none;"></div>
+  </div>
+
   <div class="history">
     <h3>Transaction History</h3>
     <label for="monthFilter">Filter by Month:</label>
@@ -186,251 +153,231 @@
     <ul id="historyList"></ul>
   </div>
 
-  <!-- New Financial Recommendation Section -->
-  <div class="recommendation">
-    <h3>Financial Recommendation</h3>
-    <label for="salaryInput">Monthly Salary (INR):</label>
-    <input type="number" id="salaryInput" placeholder="Enter your monthly salary" min="0" />
-
-    <label for="otherIncomeInput">Other Monthly Income (INR):</label>
-    <input type="number" id="otherIncomeInput" placeholder="Enter other income if any" min="0" />
-
-    <button id="calcRecommendation" type="button">Get Recommendation</button>
-
-    <div id="recommendationResult" style="display:none; margin-top:1rem;">
-      <h4>Spending Breakdown</h4>
-      <table id="spendingTable">
-        <thead>
-          <tr>
-            <th>Category</th><th>Spent (₹)</th><th>Recommended Budget (₹)</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="future-health" id="futureHealth"></div>
-    </div>
-  </div>
-
   <script>
     const payLink = document.getElementById("payLink");
     const form = document.getElementById("paymentForm");
     const useGpayLink = document.getElementById("useGpayLink");
-    const categoryDiv = document.getElementById("categoryDiv");
-    const historyList = document.getElementById("historyList");
-    const monthFilter = document.getElementById("monthFilter");
 
-    // Auto-check Google Pay URL for iPhone
     const isIphone = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (isIphone) {
       useGpayLink.checked = true;
       useGpayLink.disabled = true;
     }
 
-    // Enable/disable pay button based on form input validation
-    form.addEventListener("input", () => {
+    // Enable/disable pay link based on form inputs
+    function updatePayLinkState() {
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
       const amount = document.getElementById('amount').value.trim();
       const note = document.getElementById('note').value.trim();
-
       if (upiId && name && amount && note) {
         payLink.removeAttribute("disabled");
       } else {
         payLink.setAttribute("disabled", true);
       }
-    });
+    }
+
+    form.addEventListener("input", updatePayLinkState);
+    updatePayLinkState();
 
     payLink.addEventListener("click", function(e) {
       e.preventDefault();
 
       const upiId = document.getElementById('upiId').value.trim();
       const name = document.getElementById('name').value.trim();
-      const amount = parseFloat(document.getElementById('amount').value.trim());
+      const amount = document.getElementById('amount').value.trim();
       const note = document.getElementById('note').value.trim();
 
-      if (!upiId || !name || !amount || !note) return;
-
-      if (useGpayLink.checked) {
-        // Google Pay web link for iPhone
-        this.href = `https://pay.google.com/intl/en_in/about/#upi?id=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&tn=${encodeURIComponent(note)}&am=${amount.toFixed(2)}&cu=INR`;
-      } else {
-        // UPI link for Android or other
-        this.href = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&tn=${encodeURIComponent(note)}&am=${amount.toFixed(2)}&cu=INR`;
+      if (!upiId || !name || !amount || !note) {
+        alert("Please fill all fields.");
+        return;
       }
 
-      // Show category selector for this transaction
-      categoryDiv.style.display = "block";
+      let paymentUrl = "";
+      if (useGpayLink.checked) {
+        paymentUrl = `https://redirect-stackguardian.vercel.app/api/pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${encodeURIComponent(note)}`;
+      } else {
+        paymentUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&tn=${encodeURIComponent(note)}&cu=INR`;
+      }
 
-      // Store current transaction temporarily for category selection
-      window.currentTransaction = {
-        upiId, name, amount, note, category: null,
-        date: new Date()
-      };
+      window.location.href = paymentUrl;
+
+      localStorage.setItem("lastTxn", JSON.stringify({ upiId, name, amount, note }));
+
+      setTimeout(() => {
+        document.getElementById("categoryDiv").style.display = "block";
+      }, 1000);
     });
 
     function selectCategory(category) {
-      if (!window.currentTransaction) return alert("Please initiate a payment first.");
+      const txn = JSON.parse(localStorage.getItem("lastTxn"));
+      if (!txn) {
+        alert("No payment data found.");
+        return;
+      }
+      txn.category = category;
+      txn.timestamp = new Date().toLocaleString();
 
-      window.currentTransaction.category = category;
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
+      history.push(txn);
+      localStorage.setItem("history", JSON.stringify(history));
 
-      // Save transaction to localStorage
-      let transactions = JSON.parse(localStorage.getItem("upiTransactions") || "[]");
-      transactions.push(window.currentTransaction);
-      localStorage.setItem("upiTransactions", JSON.stringify(transactions));
-
-      // Hide category div and clear current transaction
-      categoryDiv.style.display = "none";
-      window.currentTransaction = null;
-
-      alert("Transaction saved with category: " + category);
+      alert(`Transaction of ₹${txn.amount} categorized as ${category}`);
+      document.getElementById("categoryDiv").style.display = "none";
       loadHistory();
-      clearForm();
     }
 
-    function clearForm() {
-      form.reset();
-      payLink.setAttribute("disabled", true);
+    function getMonthOptions(history) {
+      const months = new Set();
+      history.forEach(t => {
+        if (t.timestamp) {
+          const dt = new Date(t.timestamp);
+          if (!isNaN(dt)) {
+            const monthYear = dt.toLocaleString('default', { month: 'short', year: 'numeric' });
+            months.add(monthYear);
+          }
+        }
+      });
+      return Array.from(months).sort((a,b) => {
+        const [ma, ya] = a.split(" ");
+        const [mb, yb] = b.split(" ");
+        const da = new Date(`${ma} 1, ${ya}`);
+        const db = new Date(`${mb} 1, ${yb}`);
+        return db - da; // recent first
+      });
     }
 
     function loadHistory() {
-      let transactions = JSON.parse(localStorage.getItem("upiTransactions") || "[]");
+      const history = JSON.parse(localStorage.getItem("history") || "[]");
+      const filter = document.getElementById("monthFilter").value;
+      const list = document.getElementById("historyList");
+      list.innerHTML = "";
 
-      // Populate month filter dropdown with unique months from transactions
-      let monthsSet = new Set();
-      transactions.forEach(tx => {
-        let date = new Date(tx.date);
-        let monthKey = date.getFullYear() + "-" + (date.getMonth()+1).toString().padStart(2, '0');
-        monthsSet.add(monthKey);
+      const filtered = filter ? history.filter(t => {
+        if (!t.timestamp) return false;
+        const dt = new Date(t.timestamp);
+        const monthYear = dt.toLocaleString('default', { month: 'short', year: 'numeric' });
+        return monthYear === filter;
+      }) : history;
+
+      filtered.forEach(txn => {
+        const li = document.createElement("li");
+        li.textContent = `${txn.timestamp} - ₹${txn.amount} - ${txn.category || "Uncategorized"} - ${txn.note}`;
+        list.appendChild(li);
       });
 
-      // Clear existing options except first "All"
-      while (monthFilter.options.length > 1) {
-        monthFilter.remove(1);
-      }
-      Array.from(monthsSet).sort((a,b) => b.localeCompare(a)).forEach(month => {
-        let option = document.createElement("option");
-        option.value = month;
-        let [y,m] = month.split("-");
-        option.text = new Date(y, m-1).toLocaleString('default', {month: 'long', year: 'numeric'});
-        monthFilter.appendChild(option);
-      });
-
-      // Filter by selected month if any
-      const selectedMonth = monthFilter.value;
-      if (selectedMonth) {
-        transactions = transactions.filter(tx => {
-          let d = new Date(tx.date);
-          let key = d.getFullYear() + "-" + (d.getMonth()+1).toString().padStart(2, '0');
-          return key === selectedMonth;
-        });
-      }
-
-      // Render list
-      historyList.innerHTML = "";
-      if (transactions.length === 0) {
-        historyList.innerHTML = "<li>No transactions found.</li>";
-        return;
-      }
-      transactions.forEach(tx => {
-        let d = new Date(tx.date);
-        historyList.innerHTML += `<li><strong>${tx.category || 'Uncategorized'}</strong>: ₹${tx.amount.toFixed(2)} to ${tx.name} (${tx.upiId}) - ${tx.note} <br/><small>${d.toLocaleDateString()} ${d.toLocaleTimeString()}</small></li>`;
+      // Populate month filter dropdown
+      const months = getMonthOptions(history);
+      const monthFilter = document.getElementById("monthFilter");
+      monthFilter.innerHTML = '<option value="">All</option>';
+      months.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        monthFilter.appendChild(opt);
       });
     }
 
-    // Initial load of history
     loadHistory();
 
-    // --- Financial Recommendation Logic ---
+    // --- QR code scanning integration ---
+    const startScanBtn = document.getElementById("startScanBtn");
+    const qrReaderDiv = document.getElementById("qr-reader");
+    let html5QrCode;
 
-    const salaryInput = document.getElementById("salaryInput");
-    const otherIncomeInput = document.getElementById("otherIncomeInput");
-    const calcRecommendation = document.getElementById("calcRecommendation");
-    const recommendationResult = document.getElementById("recommendationResult");
-    const spendingTableBody = document.querySelector("#spendingTable tbody");
-    const futureHealthDiv = document.getElementById("futureHealth");
+    startScanBtn.addEventListener("click", () => {
+      if (qrReaderDiv.style.display === "none") {
+        qrReaderDiv.style.display = "block";
+        startScanBtn.textContent = "Stop Scanning";
 
-    // Recommended % budget per category of total income
-    const recommendedBudgetsPercent = {
-      Food: 0.15,
-      Entertainment: 0.10,
-      Petrol: 0.07,
-      Education: 0.05,
-      Fun: 0.05,
-      Vacation: 0.05,
-      Savings: 0.30,
-      Stocks: 0.10,
-      Tax: 0.13
-    };
+        html5QrCode = new Html5Qrcode("qr-reader");
 
-    // Calculate total spent per category from transactions
-    function calculateSpending() {
-      let transactions = JSON.parse(localStorage.getItem("upiTransactions") || "[]");
-      // Include categories we want to show, even if zero
-      let categories = Object.keys(recommendedBudgetsPercent);
-      let spent = {};
-      categories.forEach(c => spent[c] = 0);
+        Html5Qrcode.getCameras().then(cameras => {
+          if (cameras && cameras.length) {
+            let cameraId = cameras[0].id; // use first camera
+            html5QrCode.start(
+              cameraId,
+              { fps: 10, qrbox: 250 },
+              qrCodeMessage => {
+                // QR code scanned successfully
+                console.log("QR Code detected:", qrCodeMessage);
+                processUPIQRCode(qrCodeMessage);
+                stopScanning();
+              },
+              errorMessage => {
+                // scanning errors or no QR found - ignore
+              }
+            ).catch(err => {
+              alert("Camera start error: " + err);
+            });
+          } else {
+            alert("No cameras found on this device.");
+          }
+        }).catch(err => {
+          alert("Camera permission error: " + err);
+        });
 
-      transactions.forEach(tx => {
-        // Use category if exists in recommendedBudgetsPercent else add to 'Fun' by default
-        let cat = tx.category;
-        if (!cat || !categories.includes(cat)) cat = "Fun";
-        spent[cat] = (spent[cat] || 0) + tx.amount;
-      });
-      return spent;
+      } else {
+        stopScanning();
+      }
+    });
+
+    function stopScanning() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          qrReaderDiv.style.display = "none";
+          startScanBtn.textContent = "Scan UPI QR Code";
+          html5QrCode.clear();
+        }).catch(err => {
+          console.warn("Failed to stop QR scanner: ", err);
+        });
+      } else {
+        qrReaderDiv.style.display = "none";
+        startScanBtn.textContent = "Scan UPI QR Code";
+      }
     }
 
-    calcRecommendation.addEventListener("click", () => {
-      let salary = parseFloat(salaryInput.value);
-      let otherIncome = parseFloat(otherIncomeInput.value);
-      if (isNaN(salary) || salary < 0) return alert("Please enter valid Salary");
-      if (isNaN(otherIncome) || otherIncome < 0) otherIncome = 0;
+    // Parse UPI QR code and fill form
+    function processUPIQRCode(qrString) {
+      // Typical UPI QR looks like: upi://pay?pa=abc@upi&pn=Name&am=100&cu=INR&tn=note
+      // Or it might be a URL with similar query params
 
-      const totalIncome = salary + otherIncome;
+      try {
+        let url;
 
-      const spent = calculateSpending();
+        if (qrString.startsWith("upi://") || qrString.startsWith("UPI://")) {
+          url = new URL(qrString);
+        } else if (qrString.startsWith("http://") || qrString.startsWith("https://")) {
+          url = new URL(qrString);
+        } else {
+          // Sometimes QR code might just be a plain UPI ID, handle that:
+          document.getElementById("upiId").value = qrString;
+          alert("UPI ID scanned. Please fill other details.");
+          return;
+        }
 
-      // Clear previous rows
-      spendingTableBody.innerHTML = "";
+        const params = new URLSearchParams(url.search);
 
-      // Show spending and recommended budgets
-      Object.entries(recommendedBudgetsPercent).forEach(([cat, percent]) => {
-        const spentAmount = spent[cat] || 0;
-        const recommendedAmount = totalIncome * percent;
+        if (params.has("pa")) {
+          document.getElementById("upiId").value = params.get("pa");
+        }
+        if (params.has("pn")) {
+          document.getElementById("name").value = params.get("pn");
+        }
+        if (params.has("am")) {
+          document.getElementById("amount").value = params.get("am");
+        }
+        if (params.has("tn")) {
+          document.getElementById("note").value = params.get("tn");
+        }
 
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${cat}</td>
-          <td>₹${spentAmount.toFixed(2)}</td>
-          <td>₹${recommendedAmount.toFixed(2)}</td>
-        `;
-        spendingTableBody.appendChild(row);
-      });
-
-      // Simple future bank health forecast
-      // Calculate total spent tracked (only categories we consider)
-      let totalSpent = 0;
-      for (let key in spent) totalSpent += spent[key];
-
-      // Calculate savings: income - total spent - tax
-      // Tax assumed 13% of income, but we use recommended tax budget here
-      const taxBudget = totalIncome * recommendedBudgetsPercent.Tax;
-      const savings = totalIncome - totalSpent - taxBudget;
-
-      let healthMessage = "";
-      if (savings > totalIncome * 0.15) {
-        healthMessage = "Your bank account health is good! Keep saving consistently.";
-        futureHealthDiv.style.color = "#15803d"; // green
-      } else if (savings > 0) {
-        healthMessage = "Your savings are moderate. Try to reduce discretionary spending.";
-        futureHealthDiv.style.color = "#ca8a04"; // amber
-      } else {
-        healthMessage = "Warning: Your expenses exceed your income! Review your budget urgently.";
-        futureHealthDiv.style.color = "#b91c1c"; // red
+        updatePayLinkState();
+        alert("UPI details auto-filled from QR code.");
+      } catch (e) {
+        alert("Invalid QR code format.");
+        console.error(e);
       }
-
-      futureHealthDiv.textContent = healthMessage;
-      recommendationResult.style.display = "block";
-    });
+    }
   </script>
 </body>
 </html>
